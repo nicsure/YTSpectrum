@@ -12,10 +12,11 @@ namespace YTSpectrum
     public partial class Core
     {
         private readonly WaveIn audioInSampler;
-        private bool audioInState = false;
+        private bool audioInState;
 
         private Core(Core_AudioIn _) : this(new Core_AudioOut())
         {
+            audioInState = false;
             audioInSampler = new WaveIn()
             {
                 WaveFormat = new WaveFormat(baseFreq, 8, 1)

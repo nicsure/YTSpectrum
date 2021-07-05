@@ -59,7 +59,7 @@ namespace YTSpectrum
             cpuSpeed = (float)cpuClockFreq / (float)baseFreq;
             cpuRam = new byte[65536];
             Array.Copy(File.ReadAllBytes("48k.rom"), cpuRam, 16384);
-            cpu.SetMemoryAccessMode(0, 16384, MemoryAccessMode.ReadOnly);
+            cpu.SetMemoryAccessMode(0, 16384, MemoryAccessMode.ReadOnly);            
             cpu.Memory = this;
             cpu.RegisterInterruptSource(this);
         }

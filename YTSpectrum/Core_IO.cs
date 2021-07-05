@@ -31,10 +31,11 @@ namespace YTSpectrum
     {
         private readonly Dictionary<Keys, int[]> ioKeyMap;
         private readonly Dictionary<int, IntBuffer> ioKeyState;
-        private int ioSpeakerState = 0;
+        private int ioSpeakerState;
 
         private Core(Core_IO portSpace) : this(new Core_CPU())
         {
+            ioSpeakerState = 0;
             portSpace.Get = IO_PortIn;
             portSpace.Set = IO_PortOut;
             cpu.PortsSpace = portSpace;
@@ -81,16 +82,18 @@ namespace YTSpectrum
                 [Keys.N] = new int[] { 0x7ffe, 8 },
                 [Keys.B] = new int[] { 0x7ffe, 16 }
             };
+            IntBuffer lastRow = new IntBuffer(0xbf);
             ioKeyState = new Dictionary<int, IntBuffer>
             {
-                [0xfefe] = new IntBuffer(0x1f),
-                [0xfdfe] = new IntBuffer(0x1f),
-                [0xfbfe] = new IntBuffer(0x1f),
-                [0xf7fe] = new IntBuffer(0x1f),
-                [0xeffe] = new IntBuffer(0x1f),
-                [0xdffe] = new IntBuffer(0x1f),
-                [0xbffe] = new IntBuffer(0x1f),
-                [0x7ffe] = new IntBuffer(0x1f)
+                [0xfefe] = new IntBuffer(0xbf),
+                [0xfdfe] = new IntBuffer(0xbf),
+                [0xfbfe] = new IntBuffer(0xbf),
+                [0xf7fe] = new IntBuffer(0xbf),
+                [0xeffe] = new IntBuffer(0xbf),
+                [0xdffe] = new IntBuffer(0xbf),
+                [0xbffe] = new IntBuffer(0xbf),
+                [0x7ffe] = lastRow,
+                [0x00fe] = lastRow
             };
         }
 
@@ -99,11 +102,12 @@ namespace YTSpectrum
             if (ioKeyState.ContainsKey(address))
             {
                 IntBuffer ks = ioKeyState[address];
-                lock (ks) return (byte)ks.Value;
-            }
-            else if (address == 0xfe)
-            {
-                return (byte)(audioInState ? 0xff : 0xbf);
+                lock (ks)
+                {
+                    byte b = (byte)ks.Value;
+                    if (audioInState) b |= 0x40;
+                    return b;
+                }
             }
             return 255;
         }
@@ -135,9 +139,9 @@ namespace YTSpectrum
                 {
                     int lv = ks.LastValue;
                     if (down)
-                        lv &= ~bit & 0x1f;
+                        lv &= ~bit & 0xff;
                     else
-                        lv |= bit & 0x1f;
+                        lv |= bit & 0xff;
                     ks.Value = lv;
                 }
             }

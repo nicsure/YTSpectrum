@@ -17,18 +17,20 @@ namespace YTSpectrum
         public override WaveFormat WaveFormat => audioOutWaveFormat;
         public override long Length => long.MaxValue;
         public override long Position { get => audioOutPosition; set => throw new NotImplementedException(); }
-        private long audioOutPosition = 0;
 
+        private long audioOutPosition;
         private byte audioOutSpkValue;
         private ulong audioOutCount;
         private bool audioOutWaiting;
         private byte audioOutNextSpkValue;
         private ulong audioOutChange;
         private ulong audioOutLatency;        
-        private readonly Queue<ulong> audioOutEvents = new Queue<ulong>();
+        private readonly Queue<ulong> audioOutEvents;
 
         private Core(Core_AudioOut _) : this(new Core_IO())
         {
+            audioOutPosition = 0;
+            audioOutEvents = new Queue<ulong>();
             audioOutSpkValue = 128;
             audioOutCount = 0;
             audioOutWaiting = false;

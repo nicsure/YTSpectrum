@@ -30,7 +30,8 @@ namespace YTSpectrum
         private readonly Timer videoFlashTimer;
         private readonly PictureBox videoPBControl;
         private readonly Bitmap videoBitmap;
-        private readonly MethodInvoker videoShow;
+        private delegate void Video_Delegate(byte[] data);
+        private readonly Video_Delegate videoShow;
 
         private Core(Core_Video coreVideo) : this(new Core_AudioIn())
         {
@@ -120,22 +121,21 @@ namespace YTSpectrum
             }
         }
 
-        private void Video_Show()
+        private void Video_Show(byte[] clone)
         {
-            byte[] clone = (byte[])videoScreenData.Clone();
             BitmapData bmd = videoBitmap.LockBits(
                     videoScreenRect,
                     ImageLockMode.WriteOnly,
                     PixelFormat.Format8bppIndexed);
             Marshal.Copy(clone, 0, bmd.Scan0, clone.Length);
-            videoBitmap.UnlockBits(bmd);
+            videoBitmap.UnlockBits(bmd);            
             videoPBControl.Refresh();
         }
 
         private void Video_Display()
         {
             if (!videoPBControl.IsDisposed)
-                videoPBControl.Invoke(videoShow);
+                videoPBControl.Invoke(videoShow, videoScreenData.Clone());
         }
 
         private static void Fill(byte[] array, byte with, int start, int len)
